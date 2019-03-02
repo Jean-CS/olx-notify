@@ -1,5 +1,6 @@
 {
   "name": "olx-notify",
+  "description": "Node app to notifiy new olx items from a selected query by email",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/Jean-CS/olx-notify.git",
