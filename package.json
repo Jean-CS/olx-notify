@@ -1,0 +1,14 @@
+{
+  "name": "olx-notify",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Jean-CS/olx-notify.git",
+  "author": "Jean Santos <jeansantosc@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "crawler": "^1.2.0"
+  }
+}
