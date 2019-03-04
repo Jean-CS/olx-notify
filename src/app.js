@@ -28,6 +28,8 @@ const c = new Crawler({
     // a lean implementation of core jQuery designed specifically for the server
     let json = setData(res.$);
 
+    checkNewItems(json);
+
     fs.writeFileSync(FILE_NAME, JSON.stringify(json));
 
     done();
@@ -36,6 +38,24 @@ const c = new Crawler({
 
 // Queue just one URL, with default callback
 c.queue(url);
+
+const checkNewItems = newJson => {
+  if (fs.existsSync(FILE_NAME)) {
+    const jsonFile = JSON.parse(fs.readFileSync(FILE_NAME, "utf-8"));
+    const newLength = newJson.length;
+    const fileLength = jsonFile.length;
+
+    if (newLength === fileLength) return;
+
+    const diffLength = newLength - fileLength;
+
+    const newItems = [];
+
+    for (let i = 0; i < diffLength; i++) {
+      newItems.push(newJson[i]);
+    }
+  }
+};
 
 const setData = $ => {
   let jsonData = [];
