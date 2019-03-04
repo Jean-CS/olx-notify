@@ -10,7 +10,9 @@
     "start": "node src/app.js"
   },
   "dependencies": {
-    "crawler": "^1.2.0"
+    "crawler": "^1.2.0",
+    "dotenv": "^6.2.0",
+    "nodemailer": "^5.1.1"
   },
   "devDependencies": {
     "eslint": "^5.15.0"

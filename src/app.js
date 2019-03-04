@@ -1,5 +1,6 @@
 const Crawler = require("crawler");
 const fs = require("fs");
+const mail = require("./mail");
 
 const SELECTOR_LIST = "#main-ad-list";
 const SELECTOR_TITLE = ".col-2 h2";
@@ -33,7 +34,10 @@ const c = new Crawler({
       TITLE_SHOULD_CONTAIN.some(key => item.title.toLowerCase().includes(key))
     );
 
-    checkNewItems(filteredJson);
+    const items = checkNewItems(filteredJson);
+
+    if (items) notify(items);
+    else console.log("No new annoucements 💔");
 
     fs.writeFileSync(FILE_NAME, JSON.stringify(filteredJson));
 
@@ -43,6 +47,10 @@ const c = new Crawler({
 
 // Queue just one URL, with default callback
 c.queue(url);
+
+const notify = items => {
+  mail.send(items);
+};
 
 const checkNewItems = newJson => {
   if (fs.existsSync(FILE_NAME)) {
@@ -59,6 +67,8 @@ const checkNewItems = newJson => {
     for (let i = 0; i < diffLength; i++) {
       newItems.push(newJson[i]);
     }
+
+    return newItems;
   }
 };
 
