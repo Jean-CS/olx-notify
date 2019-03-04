@@ -1,51 +1,72 @@
 const Crawler = require("crawler");
+const fs = require("fs");
 
-const json = { title: "", region: "", price: "", date: "" };
+const SELECTOR_LIST = "#main-ad-list";
+const SELECTOR_TITLE = ".col-2 h2";
+const SELECTOR_REGION = ".col-2 .detail-region";
+const SELECTOR_PRICE = ".col-3 p";
+const SELECTOR_DATE = ".col-4 p:first-of-type";
+const FILE_NAME = "results.json";
+
+const json = [{ id: "", title: "", region: "", price: "", date: "" }];
+const url =
+  "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook";
 
 const c = new Crawler({
   maxConnections: 10,
   // This will be called for each crawled page
-  callback: function(error, res, done) {
-    if (error) {
-      console.log(error);
-    } else {
-      const $ = res.$;
-      // $ is Cheerio by default
-      //a lean implementation of core jQuery designed specifically for the server
-
-      $("#main-ad-list").filter(function() {
-        const data = $(this);
-        const first = data.children().first();
-
-        json.title = first
-          .find(".col-2 h2")
-          .text()
-          .trim();
-
-        json.region = first
-          .find(".col-2 .detail-region")
-          .text()
-          .trim();
-
-        json.price = first
-          .find(".col-3 p")
-          .text()
-          .trim();
-
-        json.date = first
-          .find(".col-4")
-          .children()
-          .first()
-          .text();
-
-        console.log(json);
-      });
+  callback: function(err, res, done) {
+    if (err) {
+      console.log(err);
+      done();
     }
+
+    // $ is Cheerio by default
+    // a lean implementation of core jQuery designed specifically for the server
+    setData(res.$);
+
     done();
   }
 });
 
 // Queue just one URL, with default callback
-c.queue(
-  "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook"
-);
+c.queue(url);
+
+const setData = $ => {
+  $(SELECTOR_LIST).filter(function() {
+    const data = $(this).children();
+
+    data.each(function(i, element) {
+      json.push(addItem($(element)));
+    });
+
+    console.log(json);
+
+    fs.writeFileSync(FILE_NAME, JSON.stringify(json));
+  });
+};
+
+const addItem = element => {
+  let tmp = {};
+
+  tmp.title = getText(element, SELECTOR_TITLE);
+  tmp.region = getText(element, SELECTOR_REGION)
+    .split(",")
+    .map(s => s.trim())
+    .join(", ");
+  tmp.price = getText(element, SELECTOR_PRICE);
+  tmp.date = getText(element, SELECTOR_DATE);
+  tmp.id = setId(tmp);
+
+  return tmp;
+};
+
+const setId = object =>
+  (object.title + object.price + object.date).replace(/[^A-Z0-9]/gi, "");
+
+/// @element  : is a cheerio ($) object
+const getText = (element, selector) =>
+  element
+    .find(selector)
+    .text()
+    .trim();
