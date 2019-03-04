@@ -14,6 +14,7 @@ const FILE_NAME = "results.json";
 //const json = [];
 const url =
   "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook";
+const TITLE_SHOULD_CONTAIN = ["mac"];
 
 const c = new Crawler({
   maxConnections: 10,
@@ -28,9 +29,13 @@ const c = new Crawler({
     // a lean implementation of core jQuery designed specifically for the server
     let json = setData(res.$);
 
-    checkNewItems(json);
+    let filteredJson = json.filter(item =>
+      TITLE_SHOULD_CONTAIN.some(key => item.title.toLowerCase().includes(key))
+    );
 
-    fs.writeFileSync(FILE_NAME, JSON.stringify(json));
+    checkNewItems(filteredJson);
+
+    fs.writeFileSync(FILE_NAME, JSON.stringify(filteredJson));
 
     done();
   }
