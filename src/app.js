@@ -6,9 +6,12 @@ const SELECTOR_TITLE = ".col-2 h2";
 const SELECTOR_REGION = ".col-2 .detail-region";
 const SELECTOR_PRICE = ".col-3 p";
 const SELECTOR_DATE = ".col-4 p:first-of-type";
+const SELECTOR_IMG = ".col-1 .image";
+const SELECTOR_URL = ".item > a";
 const FILE_NAME = "results.json";
 
-const json = [{ id: "", title: "", region: "", price: "", date: "" }];
+// { id: "", title: "", region: "", price: "", date: "", image: "", url: "" }
+//const json = [];
 const url =
   "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook";
 
@@ -23,7 +26,9 @@ const c = new Crawler({
 
     // $ is Cheerio by default
     // a lean implementation of core jQuery designed specifically for the server
-    setData(res.$);
+    let json = setData(res.$);
+
+    fs.writeFileSync(FILE_NAME, JSON.stringify(json));
 
     done();
   }
@@ -33,17 +38,17 @@ const c = new Crawler({
 c.queue(url);
 
 const setData = $ => {
+  let jsonData = [];
+
   $(SELECTOR_LIST).filter(function() {
     const data = $(this).children();
 
     data.each(function(i, element) {
-      json.push(addItem($(element)));
+      jsonData.push(addItem($(element)));
     });
-
-    console.log(json);
-
-    fs.writeFileSync(FILE_NAME, JSON.stringify(json));
   });
+
+  return jsonData;
 };
 
 const addItem = element => {
@@ -56,6 +61,8 @@ const addItem = element => {
     .join(", ");
   tmp.price = getText(element, SELECTOR_PRICE);
   tmp.date = getText(element, SELECTOR_DATE);
+  tmp.image = element.find(SELECTOR_IMG).attr("src");
+  tmp.url = element.find(SELECTOR_URL).attr("href");
   tmp.id = setId(tmp);
 
   return tmp;
