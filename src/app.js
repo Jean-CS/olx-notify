@@ -1,21 +1,8 @@
 const Crawler = require("crawler");
 const fs = require("fs");
+
 const mail = require("./mail");
-
-const SELECTOR_LIST = "#main-ad-list";
-const SELECTOR_TITLE = ".col-2 h2";
-const SELECTOR_REGION = ".col-2 .detail-region";
-const SELECTOR_PRICE = ".col-3 p";
-const SELECTOR_DATE = ".col-4 p:first-of-type";
-const SELECTOR_IMG = ".col-1 .image";
-const SELECTOR_URL = ".item > a";
-const FILE_NAME = "results.json";
-
-// { id: "", title: "", region: "", price: "", date: "", image: "", url: "" }
-//const json = [];
-const url =
-  "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook";
-const TITLE_SHOULD_CONTAIN = ["mac"];
+import * as constants from "./constants";
 
 const c = new Crawler({
   maxConnections: 10,
@@ -27,11 +14,16 @@ const c = new Crawler({
     }
 
     // $ is Cheerio by default
-    // a lean implementation of core jQuery designed specifically for the server
+    // Cheerio is a lean implementation of core jQuery designed specifically for the server
     let json = setData(res.$);
 
+    // Remove all items that do not contain the words in the constant arrays
+    // Example: The search is for "macbook" and it is required for every
+    //          item to have the word "mac" in it's title
     let filteredJson = json.filter(item =>
-      TITLE_SHOULD_CONTAIN.some(key => item.title.toLowerCase().includes(key))
+      constants.TITLE_SHOULD_CONTAIN.some(key =>
+        item.title.toLowerCase().includes(key)
+      )
     );
 
     const items = checkNewItems(filteredJson);
@@ -39,22 +31,25 @@ const c = new Crawler({
     if (items) notify(items);
     else console.log("No new annoucements 💔");
 
-    fs.writeFileSync(FILE_NAME, JSON.stringify(filteredJson));
+    fs.writeFileSync(constants.FILE_NAME, JSON.stringify(filteredJson));
 
     done();
   }
 });
 
 // Queue just one URL, with default callback
-c.queue(url);
+c.queue(constants.URL);
 
+// Calls the email module to send an email with the new items
 const notify = items => {
   mail.send(items);
 };
 
+// Compares the new json object with the server file
+// and if there are new items, return them
 const checkNewItems = newJson => {
-  if (fs.existsSync(FILE_NAME)) {
-    const jsonFile = JSON.parse(fs.readFileSync(FILE_NAME, "utf-8"));
+  if (fs.existsSync(constants.FILE_NAME)) {
+    const jsonFile = JSON.parse(fs.readFileSync(constants.FILE_NAME, "utf-8"));
     const newLength = newJson.length;
     const fileLength = jsonFile.length;
 
@@ -72,10 +67,11 @@ const checkNewItems = newJson => {
   }
 };
 
+// Filters the HTML data and returns a json object
 const setData = $ => {
   let jsonData = [];
 
-  $(SELECTOR_LIST).filter(function() {
+  $(constants.SELECTOR_LIST).filter(function() {
     const data = $(this).children();
 
     data.each(function(i, element) {
@@ -89,20 +85,21 @@ const setData = $ => {
 const addItem = element => {
   let tmp = {};
 
-  tmp.title = getText(element, SELECTOR_TITLE);
-  tmp.region = getText(element, SELECTOR_REGION)
+  tmp.title = getText(element, constants.SELECTOR_TITLE);
+  tmp.region = getText(element, constants.SELECTOR_REGION)
     .split(",")
     .map(s => s.trim())
     .join(", ");
-  tmp.price = getText(element, SELECTOR_PRICE);
-  tmp.date = getText(element, SELECTOR_DATE);
-  tmp.image = element.find(SELECTOR_IMG).attr("src");
-  tmp.url = element.find(SELECTOR_URL).attr("href");
+  tmp.price = getText(element, constants.SELECTOR_PRICE);
+  tmp.date = getText(element, constants.SELECTOR_DATE);
+  tmp.image = element.find(constants.SELECTOR_IMG).attr("src");
+  tmp.url = element.find(constants.SELECTOR_URL).attr("href");
   tmp.id = setId(tmp);
 
   return tmp;
 };
 
+// Returns an ID based on the object properties and removes any special characters
 const setId = object =>
   (object.title + object.price + object.date).replace(/[^A-Z0-9]/gi, "");
 
