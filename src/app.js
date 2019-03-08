@@ -1,7 +1,7 @@
 const Crawler = require("crawler");
 const fs = require("fs");
 require("dotenv").config({
-  path: process.env.NODE_ENV === "DEV" ? ".env.dev" : ".env"
+  path: process.env.NODE_ENV === "dev" ? ".env.dev" : ".env"
 });
 
 const mail = require("./mail");
@@ -95,7 +95,7 @@ const addItem = element => {
     .join(", ");
   tmp.price = getText(element, constants.SELECTOR_PRICE);
   tmp.date = getText(element, constants.SELECTOR_DATE);
-  tmp.image = element.find(constants.SELECTOR_IMG).attr("src");
+  tmp.image = element.find(constants.SELECTOR_IMG).attr("data-original");
   tmp.url = element.find(constants.SELECTOR_URL).attr("href");
   tmp.id = setId(tmp);
 
