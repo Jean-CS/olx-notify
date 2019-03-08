@@ -13,7 +13,7 @@ const URL =
   "https://pr.olx.com.br/regiao-de-londrina/computadores-e-acessorios?q=macbook";
 const TITLE_SHOULD_CONTAIN = ["mac"];
 
-exports = {
+export {
   SELECTOR_DATE,
   SELECTOR_IMG,
   SELECTOR_LIST,
