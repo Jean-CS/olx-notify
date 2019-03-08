@@ -1,5 +1,8 @@
 const Crawler = require("crawler");
 const fs = require("fs");
+require("dotenv").config({
+  path: process.env.NODE_ENV === "DEV" ? ".env.dev" : ".env"
+});
 
 const mail = require("./mail");
 import * as constants from "./constants";

@@ -7,10 +7,12 @@
   "author": "Jean Santos <jeansantosc@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "dev": "cross-env NODE_ENV=dev node src/app.js"
   },
   "dependencies": {
     "crawler": "^1.2.0",
+    "cross-env": "^5.2.0",
     "dotenv": "^6.2.0",
     "nodemailer": "^5.1.1"
   },
